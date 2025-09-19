@@ -352,33 +352,35 @@ function startGame(mode) {
 function handleCellClick(event) {
     if (!gameActive) return;
 
+    // For AI mode, human can only play if it's their turn
+    if (gameMode === 'ai' && currentPlayer !== humanPlayer) return;
+
     const cell = event.target;
     const index = parseInt(cell.dataset.index);
+    const subBoardIndex = getSubBoardIndex(index);
 
-    // Prevent clicking taken cells
+    // 1. Cell is already taken
     if (gameState[index] !== null) return;
 
-    // In AI mode, block human from clicking when it's AI's turn
-    if (gameMode === 'ai' && currentPlayer === aiPlayer) return;
+    // 2. Must play in the forced sub-board unless it is free
+    if (lastMove !== null && subBoardIndex !== lastMove) {
+        if (subBoardWinners[lastMove] === null) {
+            // The required sub-board is still active → invalid move
+            return;
+        }
+        // else: forced sub-board already completed → free play allowed
+    }
 
     // Make the move
     makeMove(index, currentPlayer);
 
-    // Switch turns
-    if (gameActive) {
-        if (gameMode === 'ai') {
-            // If AI mode, let AI move if it's its turn
-            if (currentPlayer === aiPlayer) {
-                status.textContent = "AI is thinking...";
-                setTimeout(aiMove, 500);
-            }
-        } else {
-            // Human vs Human: just alternate turns
-            currentPlayer = currentPlayer === 'X' ? 'X' : 'O';
-            status.textContent = `Player ${currentPlayer}'s turn`;
-        }
+    // AI turn if needed
+    if (gameMode === 'ai' && gameActive && currentPlayer === aiPlayer) {
+        status.textContent = "AI is thinking...";
+        setTimeout(aiMove, 500);
     }
 }
+
 
 
     function makeMove(index, player) {
