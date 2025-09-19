@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UTTT</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', Courier New, Courier, monospace;
+            background-color: #000064;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .game-container {
+            text-align: center;
+        }
+
+        .game-board {
+            display: none; /* Hide board initially */
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2vmin;
+            background-color: #ffffff;
+            border: 1vmin solid #ffffff;
+            box-shadow: 0 0 10vmin #ffffff;
+            margin: 0vmin auto;
+            width: 70vmin;
+            height: 70vmin;
+        }
+        
+        .sub-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 0.5vmin;
+            background-color: #000064;
+            aspect-ratio: 1 / 1; /* Fix the stretching issue */
+            position: relative;
+        }
+
+        .sub-board.X-winner::after {
+            content: attr(data-winner);
+            font-size: 15vmin;
+            color: Cyan;
+            opacity: 2;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+        .sub-board.O-winner::after {
+            content: attr(data-winner);
+            font-size: 15vmin;
+            color: Red;
+            opacity: 2;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .cell {
+            background-color: #000064;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 4vmin;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            font-weight: bold;
+        }
+
+        .cell:not(.taken):hover {
+            background-color: #ffffff;
+        }
+
+        .cell.taken {
+            cursor: not-allowed;
+        }
+
+        .x-player {
+            color: #00ffff; /* Cyan */
+        }
+
+        .o-player {
+            color: #ff0000; /* Red */
+        }
+
+        .cell.active-sub-board {
+            box-shadow: 0 0 1vmin 0.5vmin white;
+            border: 1px white;
+        }
+
+        #gameStatus {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        h1 {
+            color: #ffffff;
+            font-family: Orbitron, sans-serif;
+            font-size: 5em;
+            font-weight: bolder;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #ffffff;
+            font-family: Orbitron, sans-serif;
+            font-size: 2em;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #restartButton {
+            display: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            font-family: Orbitron, Courier New, Courier, monospace;
+            border-radius: 5px;
+            background-color: #000064;
+            color: white;
+            margin-top: 1rem;
+            box-shadow: 0 4px #ffffff;
+            transition: all 0.1s ease;
+            align-items: center;
+            display: block; /* The button must be a block-level element to use auto margins */
+            margin-left: auto;
+            margin-right: auto;
+            /* or use the shorthand */
+            margin: 1rem auto 0; /* Keeps your existing top margin */
+        }
+        #aiSideSelectContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+#aiSideSelectContainer label {
+    font-size: 1.2rem;
+    color: #ffffff;
+}
+
+#aiSideSelect {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-family: Orbitron, sans-serif;
+    background-color: #000064;
+    border: 2px solid #ffffff;
+    border-radius: 5px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#aiSideSelect:hover {
+    background-color: #ffffff;
+    color: #000064;
+}
+
+#confirmSideBtn {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+    font-family: Orbitron, sans-serif;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+    background-color: transparent;
+    color: #ffffff;
+    border-radius: 5px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#confirmSideBtn:hover {
+    background-color: #ffffff;
+    color: #000064;
+}
+
+.game-board.X-winner {
+    border: 1vmin solid cyan !important;
+    box-shadow: 0 0 20px cyan;
+}
+
+.game-board.O-winner {
+    border: 1vmin solid red !important;
+    box-shadow: 0 0 20px red;
+}
+
+
+        #restartButton:hover {
+            display: none;
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            border: none;
+            font-family: Orbitron, Courier New, Courier, monospace;
+            border-radius: 5px;
+            background-color: #ffffff;
+            color: #000064;
+            margin-top: 1rem;
+            box-shadow: 0 4px #000064;
+            transition: all 0.1s ease;
+            display: block; /* The button must be a block-level element to use auto margins */
+            margin-left: auto;
+            margin-right: auto;
+            /* or use the shorthand */
+            margin: 1rem auto 0; /* Keeps your existing top margin */
+        }
+        #restartButton:active {
+            box-shadow: 0 2px #ffffff;
+            transform: translateY(2px);
+            align-items: center;
+        }
+        
+        #gameModeSelection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #gameModeSelection button {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-family: Orbitron, sans-serif;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            background-color: transparent;
+            color: #ffffff;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+        }
+
+        #gameModeSelection button:hover {
+            background-color: #ffffff;
+            color: Black;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>UTTT</h1>
+        <h2>Made By CoolNavy</h2>
+        <div id="gameModeSelection">
+    <div>
+      <label for="aiSideSelect">AI plays as:</label>
+      <select id="aiSideSelect">
+        <option value="O">O</option>
+        <option value="X">X</option>
+      </select>
+    </div>
+    <button id="humanVsAiBtn">Start AI Game</button>
+    <button id="humanVsHumanBtn">Start 2 Player Game</button>
+        </div>
+        <div id="gameStatus"></div>
+        <div id="gameBoard" class="game-board">
+            <!-- Game board is dynamically generated by JavaScript -->
+        </div>
+        
+        <button id="restartButton">Quit The Game</button>
+    </div>
+    <script>document.addEventListener('DOMContentLoaded', () => {
+    const board = document.getElementById('gameBoard');
+    const status = document.getElementById('gameStatus');
+    const restartBtn = document.getElementById('restartButton');
+    const gameModeSelection = document.getElementById('gameModeSelection');
+    const humanVsAiBtn = document.getElementById('humanVsAiBtn');
+    const humanVsHumanBtn = document.getElementById('humanVsHumanBtn');
+
+    const BOARD_SIZE = 9;
+    const SUB_BOARD_SIZE = 3;
+    const WIN_LENGTH = 3;
+
+    let humanPlayer = 'X'; 
+    let aiPlayer = 'O';
+    let currentPlayer;
+    let gameActive = true;
+    let gameState = Array(BOARD_SIZE * BOARD_SIZE).fill(null);
+    let subBoardWinners = Array(9).fill(null);
+    let lastMove = null;
+    let gameMode = '';
+
+    const searchDepth = 3;
+
+    humanVsAiBtn.addEventListener('click', () => startGame('ai'));
+    humanVsHumanBtn.addEventListener('click', () => startGame('human'));
+
+restartBtn.style.display = 'none'; // Hide button at first
+
+function startGame(mode) {
+    gameMode = mode;
+    gameModeSelection.style.display = 'none';
+    board.style.display = 'grid';
+    restartBtn.style.display = 'block';
+    createBoard();
+
+    if (mode === 'ai') {
+        const aiSide = document.getElementById('aiSideSelect').value;
+        aiPlayer = aiSide;
+        humanPlayer = (aiSide === 'X') ? 'O' : 'X';
+        currentPlayer = 'X'; // game always starts with X
+    } else {
+        // Human vs Human
+        currentPlayer = 'X'; // always start with X
+    }
+
+    status.textContent = `Player ${currentPlayer}'s turn`;
+
+    // If AI goes first, make its move
+    if (gameMode === 'ai' && currentPlayer === aiPlayer) {
+        status.textContent = "AI is thinking...";
+        setTimeout(aiMove, 500);
+    }
+}
+
+
+
+
+    function createBoard() {
+        board.innerHTML = '';
+        for (let i = 0; i < 9; i++) {
+            const subBoard = document.createElement('div');
+            subBoard.classList.add('sub-board');
+            subBoard.dataset.subBoardIndex = i;
+            for (let j = 0; j < 9; j++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i * 9 + j;
+                cell.addEventListener('click', handleCellClick);
+                subBoard.appendChild(cell);
+            }
+            board.appendChild(subBoard);
+        }
+    }
+
+function handleCellClick(event) {
+    if (!gameActive) return;
+
+    const cell = event.target;
+    const index = parseInt(cell.dataset.index);
+
+    // Prevent clicking taken cells
+    if (gameState[index] !== null) return;
+
+    // In AI mode, block human from clicking when it's AI's turn
+    if (gameMode === 'ai' && currentPlayer === aiPlayer) return;
+
+    // Make the move
+    makeMove(index, currentPlayer);
+
+    // Switch turns
+    if (gameActive) {
+        if (gameMode === 'ai') {
+            // If AI mode, let AI move if it's its turn
+            if (currentPlayer === aiPlayer) {
+                status.textContent = "AI is thinking...";
+                setTimeout(aiMove, 500);
+            }
+        } else {
+            // Human vs Human: just alternate turns
+            currentPlayer = currentPlayer === 'X' ? 'X' : 'O';
+            status.textContent = `Player ${currentPlayer}'s turn`;
+        }
+    }
+}
+
+
+    function makeMove(index, player) {
+        gameState[index] = player;
+        const cell = document.querySelector(`.cell[data-index='${index}']`);
+        cell.textContent = player;
+        cell.classList.add('taken');
+        
+        if (player === 'X') {
+            cell.classList.add('x-player');
+        } else {
+            cell.classList.add('o-player');
+        }
+
+        const subBoardIndex = getSubBoardIndex(index);
+        
+        if (subBoardWinners[subBoardIndex] === null) {
+            const subBoardState = getSubBoardState(subBoardIndex);
+            if (checkWin(index % 9, player, subBoardState, SUB_BOARD_SIZE, WIN_LENGTH)) {
+                subBoardWinners[subBoardIndex] = player;
+                highlightSubBoard(subBoardIndex, player);
+
+                if (checkOverallWin(player)) {
+                    status.textContent = `Player ${player} has won the game!`;
+                    gameActive = false;
+                    return;
+                }
+            } else if (subBoardState.every(c => c !== null)) {
+                subBoardWinners[subBoardIndex] = 'draw';
+            }
+        }
+        
+        // --- Corrected rule for next move ---
+        const nextSubBoard = index % 9;
+        if (subBoardWinners[nextSubBoard] !== null) {
+            lastMove = null; // Free play
+        } else {
+            lastMove = nextSubBoard;
+        }
+
+        if (isDraw()) {
+            status.textContent = 'Game is a draw!';
+            gameActive = false;
+        } else {
+            currentPlayer = currentPlayer === humanPlayer ? aiPlayer : humanPlayer;
+            status.textContent = `Player ${currentPlayer}'s turn`;
+            updateBoardFocus();
+        }
+    }
+
+    function aiMove() {
+        const bestMove = minimax(gameState, subBoardWinners, lastMove, aiPlayer, searchDepth, -Infinity, Infinity, aiPlayer, humanPlayer);
+        if (bestMove && bestMove.index !== null) {
+            makeMove(bestMove.index, aiPlayer);
+        }
+    }
+
+    function getAvailableMoves(gameState, lastMove, subBoardWinners) {
+        const moves = [];
+        if (lastMove === null) {
+            for (let i = 0; i < gameState.length; i++) {
+                const subBoardIndex = Math.floor(i / 9);
+                if (gameState[i] === null && subBoardWinners[subBoardIndex] === null) moves.push(i);
+            }
+        } else {
+            if (subBoardWinners[lastMove] === null) {
+                const startIndex = lastMove * 9;
+                for (let i = 0; i < 9; i++) {
+                    if (gameState[startIndex + i] === null) moves.push(startIndex + i);
+                }
+            } else {
+                for (let i = 0; i < gameState.length; i++) {
+                    const subBoardIndex = Math.floor(i / 9);
+                    if (gameState[i] === null && subBoardWinners[subBoardIndex] === null) moves.push(i);
+                }
+            }
+        }
+        return moves;
+    }
+    
+    function checkOverallWin(player) {
+        const winningLines = [
+           [0, 1, 2], [3, 4, 5], [6, 7, 8],
+           [0, 3, 6], [1, 4, 7], [2, 5, 8],
+           [0, 4, 8], [2, 4, 6]
+        ];
+        return winningLines.some(line => line.every(subBoard => subBoardWinners[subBoard] === player));
+    }
+
+    function evaluateBoard(gameState, subBoardWinners, aiPlayer, humanPlayer) {
+        let score = 0;
+        const metaScore = evaluateMetaBoard(subBoardWinners, aiPlayer, humanPlayer);
+        score += metaScore * 1000;
+        for (let i = 0; i < 9; i++) {
+            if (subBoardWinners[i] === null) {
+                const subBoardState = getSubBoardState(i, gameState);
+                score += evaluateTicTacToe(subBoardState, aiPlayer, humanPlayer);
+            }
+        }
+        return score;
+    }
+
+    function evaluateMetaBoard(subBoardWinners, aiPlayer, humanPlayer) {
+        let score = 0;
+        const winningLines = [
+           [0, 1, 2], [3, 4, 5], [6, 7, 8],
+           [0, 3, 6], [1, 4, 7], [2, 5, 8],
+           [0, 4, 8], [2, 4, 6]
+        ];
+        for (const line of winningLines) {
+            let aiCount = 0;
+            let humanCount = 0;
+            for (const subBoardIndex of line) {
+                if (subBoardWinners[subBoardIndex] === aiPlayer) aiCount++;
+                else if (subBoardWinners[subBoardIndex] === humanPlayer) humanCount++;
+            }
+            if (aiCount === 2 && humanCount === 0) score += 10;
+            if (humanCount === 2 && aiCount === 0) score -= 10;
+            if (aiCount === 1 && humanCount === 0) score += 1;
+            if (humanCount === 1 && aiCount === 0) score -= 1;
+        }
+        return score;
+    }
+
+    function evaluateTicTacToe(board, aiPlayer, humanPlayer) {
+        let score = 0;
+        const winningLines = [
+           [0, 1, 2], [3, 4, 5], [6, 7, 8],
+           [0, 3, 6], [1, 4, 7], [2, 5, 8],
+           [0, 4, 8], [2, 4, 6]
+        ];
+        for (const line of winningLines) {
+            let aiCount = 0;
+            let humanCount = 0;
+            for (const index of line) {
+                if (board[index] === aiPlayer) aiCount++;
+                else if (board[index] === humanPlayer) humanCount++;
+            }
+            if (aiCount > 0 && humanCount === 0) score += Math.pow(10, aiCount);
+            if (humanCount > 0 && aiCount === 0) score -= Math.pow(10, humanCount);
+        }
+        return score;
+    }
+
+    function getSubBoardState(subBoardIndex, currentGameState = gameState) {
+        const subBoardState = [];
+        const startIndex = subBoardIndex * 9;
+        for (let i = 0; i < 9; i++) {
+            subBoardState.push(currentGameState[startIndex + i]);
+        }
+        return subBoardState;
+    }
+
+    function minimax(currentGameState, currentSubBoardWinners, currentLastMove, player, depth, alpha, beta, aiPlayer, humanPlayer) {
+        const isAi = (player === aiPlayer);
+        
+        if (checkOverallWin(currentSubBoardWinners, humanPlayer)) return { score: -100000 + depth };
+        if (checkOverallWin(currentSubBoardWinners, aiPlayer)) return { score: 100000 - depth };
+        
+        const availableSpots = getAvailableMoves(currentGameState, currentLastMove, currentSubBoardWinners);
+        if (availableSpots.length === 0 || depth === 0) return { score: evaluateBoard(currentGameState, currentSubBoardWinners, aiPlayer, humanPlayer) };
+
+        let bestMove = null;
+        let bestScore = isAi ? -Infinity : Infinity;
+
+        for (const index of availableSpots) {
+            const nextState = [...currentGameState];
+            nextState[index] = player;
+            const nextSubBoardWinners = [...currentSubBoardWinners];
+            
+            const subBoardIndex = Math.floor(index / 9);
+            const subBoardState = getSubBoardState(subBoardIndex, nextState);
+            if (checkWin(index % 9, player, subBoardState, 3, 3)) {
+                nextSubBoardWinners[subBoardIndex] = player;
+            } else if (subBoardState.every(c => c !== null)) {
+                nextSubBoardWinners[subBoardIndex] = 'draw';
+            }
+
+            const nextLastMove = nextSubBoardWinners[index % 9] !== null ? null : index % 9;
+            
+            const result = minimax(nextState, nextSubBoardWinners, nextLastMove, isAi ? humanPlayer : aiPlayer, depth - 1, alpha, beta, aiPlayer, humanPlayer);
+            
+            if (isAi) {
+                if (result.score > bestScore) {
+                    bestScore = result.score;
+                    bestMove = index;
+                }
+                alpha = Math.max(alpha, bestScore);
+            } else {
+                if (result.score < bestScore) {
+                    bestScore = result.score;
+                    bestMove = index;
+                }
+                beta = Math.min(beta, bestScore);
+            }
+            if (beta <= alpha) break;
+        }
+        return { score: bestScore, index: bestMove };
+    }
+
+    function getSubBoardIndex(index) {
+        return Math.floor(index / 9);
+    }
+
+    function checkWin(lastIndex, player, board, size, length) {
+        const row = Math.floor(lastIndex / size);
+        const col = lastIndex % size;
+        const directions = [
+           [0, 1], [1, 0], [1, 1], [1, -1]
+        ];
+        for (const [dr, dc] of directions) {
+            for (let i = -length + 1; i < length; i++) {
+                let count = 0;
+                for (let j = 0; j < length; j++) {
+                    const newRow = row + (i + j) * dr;
+                    const newCol = col + (i + j) * dc;
+                    if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size && board[newRow * size + newCol] === player) {
+                        count++;
+                    } else {
+                        count = 0;
+                    }
+                    if (count === length) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    function isDraw() {
+        return subBoardWinners.every(winner => winner !== null) && !checkOverallWin(humanPlayer) && !checkOverallWin(aiPlayer);
+    }
+
+    function getAvailableMovesInSubBoard(subBoardIndex) {
+        if (subBoardWinners[subBoardIndex] !== null && subBoardWinners[subBoardIndex] !== 'draw') return [];
+        const moves = [];
+        const startIndex = subBoardIndex * 9;
+        for (let i = 0; i < 9; i++) {
+            if (gameState[startIndex + i] === null) {
+                moves.push(startIndex + i);
+            }
+        }
+        return moves;
+    }
+
+    function updateBoardFocus() {
+        document.querySelectorAll('.cell').forEach(cell => cell.classList.remove('active-sub-board'));
+        if (gameActive && lastMove !== null) {
+            const startIndex = lastMove * 9;
+            for (let i = 0; i < 9; i++) {
+                if (gameState[startIndex + i] === null) {
+                    document.querySelector(`.cell[data-index='${startIndex + i}']`).classList.add('active-sub-board');
+                }
+            }
+        }
+    }
+
+    function highlightSubBoard(subBoardIndex, winner) {
+        const subBoard = document.querySelector(`.sub-board[data-sub-board-index='${subBoardIndex}']`);
+        subBoard.classList.add(`${winner}-winner`);
+        subBoard.dataset.winner = winner;
+        subBoard.style.pointerEvents = 'none';
+        
+        if (winner === 'X') {
+            subBoard.style.color = 'cyan';
+        } else if (winner === 'O') {
+            subBoard.style.color = 'red';
+        }
+    }
+
+    function restartGame() {
+        gameState.fill(null);
+        subBoardWinners.fill(null);
+        lastMove = null;
+        currentPlayer = humanPlayer;
+        gameActive = true;
+        gameModeSelection.style.display = 'flex';
+        board.style.display = 'none';
+        restartBtn.style.display = 'none';
+        status.textContent = "";
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.textContent = '';
+            cell.classList.remove('taken', 'active-sub-board', 'x-player', 'o-player');
+        });
+        document.querySelectorAll('.sub-board').forEach(subBoard => {
+            subBoard.classList.remove('X-winner', 'O-winner');
+            subBoard.removeAttribute('data-winner');
+            subBoard.style.pointerEvents = '';
+            subBoard.style.color = '';
+        });
+    }
+
+    restartBtn.addEventListener('click', restartGame);
+});</script>
+</body>
+</html>
