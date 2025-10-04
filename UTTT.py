@@ -367,9 +367,9 @@ class UltimateTicTacToe:
 
     def colorize(self, val):
         if val == 'X':
-            return '\033[31mX\033[0m'
+            return '\033[36mX\033[0m'
         elif val == 'O':
-            return '\033[34mO\033[0m'
+            return '\033[31mO\033[0m'
         else:
             return val
 
@@ -662,4 +662,5 @@ def main():
             print("❌ Invalid choice. Try again.")
 
 if __name__ == "__main__":
+
     main()
