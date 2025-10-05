@@ -31,27 +31,27 @@ class Player:
 
 def get_tier(rating):
     if rating < 500:
-        return rgb_text("Noob 🐣", 255, 223, 130)
+        return rgb_text("Noob 🐣", 128, 80, 0)
     elif rating < 1000:
-        return rgb_text("Beginner 🧑‍🎓", 255, 255, 255)
+        return rgb_text("Beginner 🧑‍🎓", 128, 128, 128)
     elif rating < 1500:
-        return rgb_text("Novice 🚹", 255, 105, 209)
+        return rgb_text("Novice 🚹", 255, 128, 128)
     elif rating < 2000:
-        return rgb_text("Intermediate 🧠", 255, 223, 130)
+        return rgb_text("Intermediate 🧠", 128, 128, 255)
     elif rating < 2500:
         return rgb_text("Advanced 🧪", 255, 255, 0)
     elif rating < 3000:
-        return rgb_text("Expert 🢼", 117, 255, 0)
+        return rgb_text("Expert 🢼", 0, 128, 255)
     elif rating < 3500:
-        return rgb_text("Elite 🧮", 201, 0, 255)
+        return rgb_text("Elite 🧮", 255, 0, 255)
     elif rating < 4000:
-        return rgb_text("Master 🧙", 38, 5, 46)
+        return rgb_text("Master 🧙", 0, 255, 0)
     elif rating < 4500:
-        return rgb_text("Grandmaster 🏆", 34, 34, 34)
+        return rgb_text("Grandmaster 🏆", 0, 0, 255)
     elif rating < 5000:
         return rgb_text("Supergrandmaster 🫸", 255, 0, 0)
     else:
-        return rgb_text("Legendary 🐉", 38, 5, 51)
+        return rgb_text("Legendary 🐉", 0, 0, 255)
 
 def get_tier_color_code(rating):
     if rating < 500:
