@@ -10,8 +10,8 @@ def safe_beep(frequency=1000, duration=200):
         import winsound
         winsound.Beep(frequency, duration)
 
-def color_text(text, color_code):
-    return f"\033[{color_code}m{text}\033[0m"
+def rgb_text(text, r, g, b):
+    return f"\033[38;2;{r};{g};{b}m{text}\033[0m"
 
 def get_level(rating):
     return f"Level {int(rating ** 0.5)}"
@@ -31,51 +31,51 @@ class Player:
 
 def get_tier(rating):
     if rating < 500:
-        return color_text("Noob 🐣", "38;5;130")
+        return rgb_text("Noob 🐣", 255, 223, 130)
     elif rating < 1000:
-        return color_text("Beginner 🧑‍🎓", "37")
+        return rgb_text("Beginner 🧑‍🎓", 255, 255, 255)
     elif rating < 1500:
-        return color_text("Novice 🚹", "38;5;209")
+        return rgb_text("Novice 🚹", 255, 105, 209)
     elif rating < 2000:
-        return color_text("Intermediate 🧠", "38;5;225")
+        return rgb_text("Intermediate 🧠", 255, 223, 130)
     elif rating < 2500:
-        return color_text("Advanced 🧪", "38;5;228")
+        return rgb_text("Advanced 🧪", 255, 255, 0)
     elif rating < 3000:
-        return color_text("Expert 🢼", "38;5;117")
+        return rgb_text("Expert 🢼", 117, 255, 0)
     elif rating < 3500:
-        return color_text("Elite 🧮", "38;5;201")
+        return rgb_text("Elite 🧮", 201, 0, 255)
     elif rating < 4000:
-        return color_text("Master 🧙", "38;5;46")
+        return rgb_text("Master 🧙", 38, 5, 46)
     elif rating < 4500:
-        return color_text("Grandmaster 🏆", "34")
+        return rgb_text("Grandmaster 🏆", 34, 34, 34)
     elif rating < 5000:
-        return color_text("Supergrandmaster 🫸", "31")
+        return rgb_text("Supergrandmaster 🫸", 255, 0, 0)
     else:
-        return color_text("Legendary 🐉", "38;5;51")
+        return rgb_text("Legendary 🐉", 38, 5, 51)
 
 def get_tier_color_code(rating):
     if rating < 500:
-        return "38;5;130"
+        return rgb_text('X',100,80,0)
     elif rating < 1000:
-        return "37"
+        return rgb_text('X',128,128,128)
     elif rating < 1500:
-        return "38;5;209"
+        return rgb_text('X',255,128,128)
     elif rating < 2000:
-        return "38;5;225"
+        return rgb_text('X',128,128,255)
     elif rating < 2500:
-        return "38;5;228"
+        return rgb_text('X',255,255,0)
     elif rating < 3000:
-        return "38;5;117"
+        return rgb_text('X',0,128,255)
     elif rating < 3500:
-        return "38;5;201"
+        return rgb_text('X',255,0,255)
     elif rating < 4000:
-        return "38;5;46"
+        return rgb_text('X',0,255,0)
     elif rating < 4500:
-        return "34"
+        return rgb_text('X',0,0,255)
     elif rating < 5000:
-        return "31"
+        return rgb_text('X',255,0,0)
     else:
-        return "38;5;51"
+        return rgb_text('X',0,255,255)
 
 def get_progress_bar(rating):
     tiers = [
@@ -367,9 +367,10 @@ class UltimateTicTacToe:
 
     def colorize(self, val):
         if val == 'X':
-            return '\033[36mX\033[0m'
+            return rgb_text('X',0,255,255)
+
         elif val == 'O':
-            return '\033[31mO\033[0m'
+            return rgb_text('O',255,0,0)
         else:
             return val
 
@@ -664,4 +665,3 @@ def main():
 if __name__ == "__main__":
 
     main()
-
